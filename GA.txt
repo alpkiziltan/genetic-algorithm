@@ -1,0 +1,186 @@
+/*
+*Lecture: ISE-318=Computer applications for IE
+*Instructor: Pro. Dr. Linet Özdamar
+*Student: Alp Kýzýltan
+*Project: MULTIOBJECTIVE UNCONSTRAINED NONLINEAR PROGRAMMING WITH GENETIC ALGORITHM
+*problem: 2
+*/
+
+
+
+#include<stdio.h>
+#include<stdlib.h>
+int main(){
+
+    srand(400);
+
+	float population[100];
+	float fitness1[100];
+	float fitness2[100];
+	float selectionProbability[100];
+	float LB = -4.0,mUB = 0.25;
+	float UB = 7.0, mLB= -0.25;
+	float x,temp,temp1,temp2;
+    int generationSize = 300,populationSize=100,topEliteSize=50;
+    int i,j,k;
+	int parent1,parent2;
+	float child1, child2;
+	
+	float best1 = 9999.0;
+	float best2 = 9999.0;
+	int best1Index, best2Index,badIndex;
+	float totalFitness;
+
+	int isBad50[100],bad50[50];
+
+	for(i=0;i<populationSize;i++){
+		float scaled = (float)rand()/RAND_MAX;
+        x =  (UB - LB)*scaled + LB;
+		population[i] = x;
+        fitness1[i]   = (x)*(x)-3;
+		fitness2[i]   = (x-5)*(x-5)+7;
+		
+
+		if( fitness1[i] < best1 ){
+			best1 = fitness1[i];
+			best1Index = i;
+		}
+
+		if( fitness2[i] < best2 ){
+			best2 = fitness2[i];
+			best2Index = i;
+		}
+	
+	}
+
+	for(i=0;i<generationSize;i++){
+		
+		totalFitness  = 0.0;
+		printf("\n\n");
+
+		for(j=0;j<populationSize;j++){			
+
+			if( fitness1[j] < best1 ){
+				best1 = fitness1[j];
+				best1Index = j;
+			}
+			if( fitness2[j] < best2 ){
+				best2 = fitness2[j];
+				best2Index = j;
+			}
+
+			isBad50[j] = 0;
+			
+
+			totalFitness  +=   134 -(fitness1[j] + fitness2[j]);
+			
+		}
+
+	    printf("Generation Number : %d\n",(i+1));
+	    printf("Best Fitness1 :%lf Best Fitness2 : %lf \n",best1,best2);
+
+		for(j=0;j<populationSize;j++){
+			selectionProbability[j] = (134 -(fitness1[j]+fitness2[j]))/totalFitness;
+		}
+
+		for(j=0;j<topEliteSize;j++){
+			float maxVal = -10000;
+			badIndex = -1;
+			for(k=0;k<populationSize;k++){
+				if(isBad50[k] != 1){
+					if((fitness1[k]+fitness2[k])> maxVal){
+						badIndex = k;
+						maxVal = fitness1[k]+fitness2[k];
+					}
+				}
+			}
+			isBad50[badIndex] = 1;
+			bad50[j] = badIndex;
+		}
+
+
+		for(j=0;j<(populationSize-topEliteSize)/2;j++){
+			parent1 = -1;
+			
+			double rndNumber = rand() / (double) RAND_MAX;
+			double offset = 0.0;
+			for (k = 0; k < populationSize; k++) {
+				offset += selectionProbability[k];
+				if (rndNumber < offset) {
+					parent1 = k;
+					break;
+				}	
+			}
+		
+			parent2 = parent1;
+			while(parent1 == parent2){
+				rndNumber = rand() / (double) RAND_MAX;
+				offset = 0.0;
+				for (k = 0; k < populationSize; k++) {
+					offset += selectionProbability[k];
+					if (rndNumber < offset) {
+						parent2 = k;
+						break;
+					}
+				}
+			}
+
+			float scaled = (float)rand()/RAND_MAX;
+			float coefficient1 =  (mUB - mLB)*scaled + mLB;
+
+			scaled = (float)rand()/RAND_MAX;
+			float coefficient2 =  (mUB - mLB)*scaled + mLB;
+
+			child1 =  parent1 + coefficient1*parent2;
+			child2 =  parent2 + coefficient2*parent1;
+			
+
+		    scaled = (float)rand()/RAND_MAX;
+			x =  (mUB - mLB)*scaled + mLB;
+			if((child1 + x)> UB){
+				child1 = UB;
+			}else if((child1+x)<LB){
+				child1 = LB;
+			}else{
+				child1 = child1 + x;
+			}	
+
+			if( child1> UB){
+				child1 = UB;
+			}else if(child1<LB){
+				child1 = LB;
+			}	
+		
+		    scaled = (float)rand()/RAND_MAX;
+			x =  (mUB - mLB)*scaled + mLB;
+			if((child2 + x)> UB){
+				child2 = UB;
+			}else if((child2+x)<LB){
+				child2 = LB;
+			}else{
+				child2 = child2 + x;
+			}	
+
+			if( child2> UB){
+				child2 = UB;
+			}else if(child2<LB){
+				child2 = LB;
+			}
+
+			population[bad50[2*j]]   = child1;
+			population[bad50[2*j+1]] = child2;
+
+		}
+
+		for(j=0;j<populationSize;j++){
+			x = population[j];
+			fitness1[j]   = (x)*(x)-3;
+			fitness2[j]   = (x-5)*(x-5)+7;
+		}
+		
+	}
+
+
+return 0;
+
+}
